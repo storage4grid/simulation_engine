@@ -1,0 +1,1062 @@
+---
+swagger: "2.0"
+info:
+  description: "Sample version of DSF-SE API for communication with the professional\
+    \ UI"
+  version: "3"
+  title: "DSF-SE API"
+  contact:
+    email: "sisay.adugna.chala@fit.fraunhofer.de"
+host: "simplon.fit.fraunhofer.de"
+basePath: "/se"
+tags:
+- name: "simulation"
+  description: "Simulation"
+- name: "commands"
+  description: "Commands for the simulation engine"
+schemes:
+- "http"
+paths:
+  /simulation:
+    post:
+      tags:
+      - "simulation"
+      summary: "Send grid data to simulation engine in order to create a new simulation"
+      operationId: "create_simulation"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Grid to be simulated"
+        required: true
+        schema:
+          $ref: "#/definitions/Grid"
+      responses:
+        "200":
+          description: "ID of the created simulation"
+          schema:
+            type: "string"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+  /simulation/{id}/{result_type}:
+    get:
+      tags:
+      - "simulation"
+      summary: "Get result of simulation"
+      operationId: "get_simulation_result_raw"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      - name: "result_type"
+        in: "path"
+        description: "Result type(voltages, current, losses) of the simulation"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Results of successful simulation"
+          schema:
+            $ref: "#/definitions/SimulationResultRaw"
+        "400":
+          description: "Invalid simulation configuration data supplied"
+        "404":
+          description: "Simulation ID not found"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+  /simulation/{id}/{result_type}/{node_name}:
+    get:
+      tags:
+      - "simulation"
+      summary: "Get result of simulation"
+      operationId: "get_simulation_result_raw_with_node"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      - name: "result_type"
+        in: "path"
+        description: "Result type(voltages, current, losses) of the simulation"
+        required: true
+        type: "string"
+      - name: "node_name"
+        in: "path"
+        description: "Node name of the simulation"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Results of successful simulation"
+          schema:
+            $ref: "#/definitions/SimulationResultRaw"
+        "400":
+          description: "Invalid simulation configuration data supplied"
+        "404":
+          description: "Simulation ID not found"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+  /simulation/{id}/connections:
+    get:
+      tags:
+      - "simulation"
+      summary: "Get topology ordered per nodes"
+      operationId: "get_topology_per_node"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Results of connections ordered per node"
+          schema:
+            $ref: "#/definitions/SimulationResult"
+        "404":
+          description: "Simulation ID not found"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+  /simulation/{id}:
+    get:
+      tags:
+      - "simulation"
+      summary: "Get result of simulation"
+      operationId: "get_simulation_result"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Results of successful simulation"
+          schema:
+            $ref: "#/definitions/SimulationResult"
+        "400":
+          description: "Invalid simulation configuration data supplied"
+        "404":
+          description: "Simulation ID not found"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+    put:
+      tags:
+      - "simulation"
+      summary: "Send new data to an existing simulation"
+      operationId: "update_simulation"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated grid data"
+        required: true
+        schema:
+          $ref: "#/definitions/Grid"
+      responses:
+        default:
+          description: "successful operation"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+    delete:
+      tags:
+      - "simulation"
+      summary: "Delete a simulation and its data"
+      operationId: "delete_simulation"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+      x-swagger-router-controller: "swagger_server.controllers.simulation_controller"
+  /commands/run/{id}:
+    put:
+      tags:
+      - "commands"
+      summary: "Runs a simulation"
+      description: "Runs a simulation"
+      operationId: "run_simulation"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation that should be started"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Configuration data for the simulation e.g. duration"
+        required: false
+        schema:
+          $ref: "#/definitions/Simulation"
+      responses:
+        default:
+          description: "successful operation"
+      x-swagger-router-controller: "swagger_server.controllers.commands_controller"
+  /commands/abort/{id}:
+    put:
+      tags:
+      - "commands"
+      summary: "Aborts a running simulation"
+      description: "If the user of the professional GUI decides to abort a running\
+        \ simulation this call will be triggered"
+      operationId: "abort_simulation"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation that should be aborted"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+      x-swagger-router-controller: "swagger_server.controllers.commands_controller"
+  /commands/status/{id}:
+    get:
+      tags:
+      - "commands"
+      summary: "Get the status of the simulation"
+      operationId: "get_simulation_status"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of the simulation"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Status of the simulation"
+          schema:
+            type: "number"
+        "400":
+          description: "Invalid simulation configuration data supplied"
+        "404":
+          description: "Simulation ID not found"
+      x-swagger-router-controller: "swagger_server.controllers.commands_controller"
+definitions:
+  Grid:
+    type: "object"
+    properties:
+      common:
+        $ref: "#/definitions/Grid_Definition"
+      radials:
+        type: "array"
+        items:
+          $ref: "#/definitions/Radial"
+  Grid_Definition:
+    type: "object"
+    required:
+    - "MVAsc3"
+    - "VoltageBases"
+    - "angle"
+    - "base_frequency"
+    - "base_kV"
+    - "bus1"
+    - "id"
+    - "phases"
+    properties:
+      id:
+        type: "string"
+      base_kV:
+        type: "number"
+      per_unit:
+        type: "number"
+      phases:
+        type: "integer"
+      bus1:
+        type: "string"
+      angle:
+        type: "integer"
+      MVAsc3:
+        type: "number"
+      MVAsc1:
+        type: "number"
+      base_frequency:
+        type: "integer"
+        format: "int32"
+      VoltageBases:
+        type: "array"
+        items:
+          type: "number"
+      url_storage_controller:
+        type: "string"
+        default: "http://localhost:8080"
+      city:
+        type: "string"
+      country:
+        type: "string"
+      max_real_power_in_kW_to_grid:
+        type: "number"
+      max_reactive_power_in_kVar_to_grid:
+        type: "number"
+  Radial:
+    type: "object"
+    properties:
+      radialId:
+        type: "string"
+      transformer:
+        type: "array"
+        items:
+          $ref: "#/definitions/Transformer"
+      loads:
+        type: "array"
+        items:
+          $ref: "#/definitions/Load"
+      powerProfiles:
+        type: "array"
+        items:
+          $ref: "#/definitions/PowerProfile"
+      powerLines:
+        type: "array"
+        items:
+          $ref: "#/definitions/Powerline"
+      photovoltaics:
+        type: "array"
+        items:
+          $ref: "#/definitions/Photovoltaic"
+      storageUnits:
+        type: "array"
+        items:
+          $ref: "#/definitions/Storage"
+      chargingStations:
+        type: "array"
+        items:
+          $ref: "#/definitions/ChargingStation"
+      linecode:
+        type: "array"
+        items:
+          $ref: "#/definitions/Linecode"
+      capacitor:
+        type: "array"
+        items:
+          $ref: "#/definitions/Capacitor"
+      regcontrol:
+        type: "array"
+        items:
+          $ref: "#/definitions/RegControl"
+      xycurves:
+        type: "array"
+        items:
+          $ref: "#/definitions/XYCurve"
+      tshapes:
+        type: "array"
+        items:
+          $ref: "#/definitions/Tshape"
+  Node:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+    example:
+      id: "id"
+  Phases:
+    type: "object"
+    required:
+    - "phase_R"
+    - "phase_S"
+    - "phase_T"
+    properties:
+      phase_R:
+        type: "boolean"
+      phase_S:
+        type: "boolean"
+      phase_T:
+        type: "boolean"
+  RegControl:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+      transformer:
+        type: "string"
+        description: "ID of the transformer to be connected to"
+      winding:
+        type: "integer"
+      vreg:
+        type: "number"
+      band:
+        type: "number"
+      ptration:
+        type: "number"
+      ctprim:
+        type: "number"
+      r:
+        type: "number"
+      x:
+        type: "number"
+  Capacitor:
+    type: "object"
+    required:
+    - "bus"
+    - "id"
+    - "kV"
+    - "phases"
+    properties:
+      id:
+        type: "string"
+      bus:
+        type: "string"
+        description: "ID for the connected node"
+      phases:
+        type: "integer"
+      kVar:
+        type: "number"
+      kV:
+        type: "number"
+  Load:
+    type: "object"
+    required:
+    - "bus"
+    - "id"
+    - "kV"
+    - "kW"
+    - "phases"
+    properties:
+      id:
+        type: "string"
+      bus:
+        type: "string"
+        description: "ID for the connected node"
+      phases:
+        type: "integer"
+      connection_type:
+        type: "string"
+      power_profile_id:
+        type: "string"
+      model:
+        type: "integer"
+        description: "Defining load models for openDSS"
+        minimum: 1
+        maximum: 8
+      kV:
+        type: "number"
+      kW:
+        type: "number"
+      kVar:
+        type: "number"
+      kVA:
+        type: "number"
+      powerfactor:
+        type: "number"
+        minimum: 0
+        maximum: 1
+  PowerProfile:
+    type: "object"
+    required:
+    - "id"
+    - "items"
+    properties:
+      id:
+        type: "string"
+      items:
+        type: "array"
+        items:
+          type: "number"
+      interval:
+        type: "number"
+      m_interval:
+        type: "number"
+      s_interval:
+        type: "number"
+      multiplier:
+        type: "number"
+      normalized:
+        type: "boolean"
+        default: true
+      use_actual_values:
+        type: "boolean"
+        default: false
+  Powerline:
+    type: "object"
+    required:
+    - "bus1"
+    - "bus2"
+    - "id"
+    - "phases"
+    properties:
+      id:
+        type: "string"
+      bus1:
+        type: "string"
+        description: "ID for the connected node"
+      phases:
+        type: "integer"
+      bus2:
+        type: "string"
+        description: "ID for the connected node"
+      length:
+        type: "number"
+      unitlength:
+        type: "string"
+      linecode:
+        type: "string"
+      r1:
+        type: "number"
+      r0:
+        type: "number"
+      x1:
+        type: "number"
+      x0:
+        type: "number"
+      c1:
+        type: "number"
+      c0:
+        type: "number"
+      switch:
+        type: "boolean"
+        default: false
+  Linecode:
+    type: "object"
+    required:
+    - "id"
+    - "nphases"
+    - "rmatrix"
+    - "units"
+    - "xmatrix"
+    properties:
+      id:
+        type: "string"
+      nphases:
+        type: "number"
+      rmatrix:
+        type: "array"
+        items:
+          type: "array"
+          items:
+            type: "number"
+      xmatrix:
+        type: "array"
+        items:
+          type: "array"
+          items:
+            type: "number"
+      cmatrix:
+        type: "array"
+        items:
+          type: "array"
+          items:
+            type: "number"
+      units:
+        type: "string"
+  XYCurve:
+    type: "object"
+    required:
+    - "id"
+    - "npts"
+    - "xarray"
+    - "yarray"
+    properties:
+      id:
+        type: "string"
+      npts:
+        type: "number"
+      xarray:
+        type: "array"
+        items:
+          type: "number"
+      yarray:
+        type: "array"
+        items:
+          type: "number"
+  Tshape:
+    type: "object"
+    required:
+    - "id"
+    - "interval"
+    - "npts"
+    - "temp"
+    properties:
+      id:
+        type: "string"
+      npts:
+        type: "number"
+      interval:
+        type: "number"
+      temp:
+        type: "array"
+        items:
+          type: "number"
+  Storage:
+    type: "object"
+    required:
+    - "bus1"
+    - "id"
+    - "kv"
+    - "optimization_model"
+    - "storage_capacity"
+    properties:
+      id:
+        type: "string"
+      bus1:
+        type: "string"
+        description: "ID for the connected bus"
+      phases:
+        type: "integer"
+      connection:
+        type: "string"
+        description: "={wye|LN|delta|LL}. Default is wye. (openDSS Name: conn)"
+      soc:
+        type: "number"
+        description: "State of Charge in % of rated kWh (openDSS Name: %stored)"
+      min_soc:
+        type: "number"
+      max_soc:
+        type: "number"
+      kv:
+        type: "number"
+        description: "Nominal rated (1.0 per unit) voltage, kV, for Storage element."
+      kw_rated:
+        type: "number"
+        description: "kW rating of power output. Side effect: Set KVA property."
+      storage_capacity:
+        type: "number"
+        description: "Rated storage capacity in kWh. Default is 50."
+      kwh_stored:
+        type: "number"
+        description: "Present amount of energy stored, kWh. Default is same as kWh\
+          \ rated."
+      max_charging_power:
+        type: "number"
+        description: "Maximal power to charge the storage"
+      max_discharging_power:
+        type: "number"
+        description: "Maximal power to discharge the storage"
+      charge_efficiency:
+        type: "number"
+        description: "Efficiency for CHARGING the storage element. Default=90%. (%EffCharge)"
+      discharge_efficiency:
+        type: "number"
+        description: "Efficiency for DISCHARGING the storage element. Default=90%.\
+          \ Idling losses are handled by %IdlingkW. (%EffCharge)"
+      powerfactor:
+        type: "number"
+        description: "(openDSS Name: pf)"
+      optimization_model:
+        type: "string"
+        description: "(A value required by PROFFES)"
+      global_control:
+        type: "boolean"
+        default: false
+      voltage_sensitivity_factor_active_power:
+        type: "number"
+        description: "Unit: V/kW"
+      voltage_sensitivity_factor_reactive_power:
+        type: "number"
+        description: "Unit: V/kW"
+  Photovoltaic:
+    type: "object"
+    required:
+    - "bus1"
+    - "id"
+    - "kV"
+    - "max_power_kW"
+    - "phases"
+    properties:
+      id:
+        type: "string"
+      inverterEfficiency:
+        type: "number"
+      phases:
+        type: "integer"
+      power:
+        type: "number"
+      max_power_kW:
+        type: "number"
+      powerunit:
+        type: "string"
+      powerfactor:
+        type: "number"
+      bus1:
+        type: "string"
+      kV:
+        type: "number"
+      effcurve:
+        type: "string"
+      ptcurve:
+        type: "string"
+      daily:
+        type: "string"
+      tdaily:
+        type: "string"
+      temperature:
+        type: "number"
+      irrad:
+        type: "number"
+      voltageunit:
+        type: "string"
+      power_profile_id:
+        type: "string"
+      control_strategy:
+        type: "string"
+        description: "Possibilities: no_control, ofw, limit_power, volt-watt, volt-var"
+        default: "no_control"
+      meta:
+        $ref: "#/definitions/Meta"
+  Meta:
+    type: "object"
+    properties:
+      percentage_max_power:
+        type: "number"
+      sensitivity_factor:
+        type: "number"
+      min_vpu_low:
+        type: "number"
+      max_vpu_low:
+        type: "number"
+      min_vpu_high:
+        type: "number"
+      max_vpu_high:
+        type: "number"
+  ChargingStation:
+    type: "object"
+    required:
+    - "bus"
+    - "id"
+    - "type_application"
+    properties:
+      id:
+        type: "string"
+      bus:
+        type: "string"
+        description: "ID for the connected bus"
+      phases:
+        type: "integer"
+      kV:
+        type: "number"
+      max_charging_power_kW:
+        type: "number"
+        format: "float"
+      charging_efficiency:
+        type: "number"
+        minimum: 0
+        maximum: 100
+      powerfactor:
+        type: "number"
+      type_application:
+        type: "string"
+        description: "residential or commercial"
+        default: "residential"
+      hosted_ev:
+        type: "array"
+        items:
+          $ref: "#/definitions/ElectricVehicle"
+  ElectricVehicle:
+    type: "object"
+    required:
+    - "SoC"
+    - "battery_capacity_kWh"
+    - "consumption_in_kW_pro_100_km"
+    - "id"
+    properties:
+      id:
+        type: "string"
+      SoC:
+        type: "number"
+        minimum: 0
+        maximum: 100
+      battery_capacity_kWh:
+        type: "number"
+        format: "float"
+      consumption_in_kW_pro_100_km:
+        type: "number"
+      unit_consumption_assumption:
+        type: "number"
+        format: "float"
+        default: 5.0
+      unit_drop_penalty:
+        type: "number"
+      unplugged_mean:
+        type: "number"
+      unplugged_mean_std:
+        type: "number"
+      plugged_mean:
+        type: "number"
+      plugged_mean_std:
+        type: "number"
+  Winding:
+    type: "object"
+    properties:
+      wdg:
+        type: "integer"
+        description: "Integer representing the winding witch will become the active\
+          \ winding for subsequent data"
+      bus:
+        type: "string"
+        description: "Definition for the connector of this winding (each winding is\
+          \ connected to one terminal of the transformator and, hence, to one bus"
+      connection_type:
+        type: "string"
+      kV:
+        type: "number"
+        description: "Rated voltage of this winding, kV"
+      kVA:
+        type: "number"
+        description: "base kVA rating for windings"
+      percent_resistance:
+        type: "number"
+      xlt:
+        type: "integer"
+      xht:
+        type: "integer"
+    example:
+      wdg: 1
+      bus: "SourceBus"
+      connection_type: "wye"
+      kV: 4.160000000000000142108547152020037174224853515625
+      kVA: 5000
+      percent_resistance: 0.5
+  Transformer:
+    type: "object"
+    required:
+    - "buses"
+    - "id"
+    - "kvas"
+    - "kvs"
+    - "phases"
+    - "windings"
+    properties:
+      id:
+        type: "string"
+      phases:
+        type: "integer"
+        description: "Number of Phases"
+      windings:
+        type: "integer"
+        description: "number of windings"
+      buses:
+        type: "array"
+        description: "Array of bus definitions for windings [1, 2. …]."
+        items:
+          type: "string"
+      kvas:
+        type: "array"
+        description: "Array of base kVA ratings for windings [1,2,…]."
+        items:
+          type: "number"
+      kvs:
+        type: "array"
+        description: "Array of kV ratings for the kV field for windings [1,2,…]."
+        items:
+          type: "number"
+      conns:
+        type: "array"
+        description: "Array of winding connections for windings [1, 2. …] <wye|delta>."
+        items:
+          type: "string"
+      xsc_array:
+        type: "array"
+        description: "Array of n*(n-1) /2 short circuit reactances in percent on the\
+          \ first winding’s kVA base. “n” is the number of windings. Order (12, 13,\
+          \ 14, …1n, 23, 24, … 34, …)"
+        items:
+          type: "number"
+      percent_rs:
+        type: "array"
+        description: "Array of percent resistances for windings [1, 2. …]"
+        items:
+          type: "number"
+      percent_load_loss:
+        type: "number"
+        description: "Percent Losses at rated load.. Causes the %r values to be set\
+          \ for windings 1 and 2."
+      bank:
+        type: "string"
+        description: "Name of the bank this transformer is part of"
+      taps:
+        type: "array"
+        description: "Array of per unit taps for windings [1,2,…]."
+        items:
+          type: "number"
+          minimum: 0
+  Duration:
+    type: "object"
+    properties:
+      day:
+        type: "integer"
+        format: "int32"
+      month:
+        type: "integer"
+        format: "int32"
+      year:
+        type: "integer"
+        format: "int32"
+    example:
+      month: 6
+      year: 1
+      day: 0
+  Simulation:
+    type: "object"
+    required:
+    - "sim_duration_in_hours"
+    properties:
+      sim_duration_in_hours:
+        type: "integer"
+        format: "int32"
+      thresholdLow:
+        type: "number"
+        format: "float"
+        description: "Lower threshold in % for voltage error"
+        minimum: 0
+        maximum: 100
+      thresholdMedium:
+        type: "number"
+        format: "float"
+        description: "Medium threshold in % for voltage error"
+        minimum: 0
+        maximum: 100
+      thresholdHigh:
+        type: "number"
+        format: "float"
+        description: "Maximum threshold in % for voltage error"
+        minimum: 0
+        maximum: 100
+    example:
+      sim_duration_in_days: 365
+      thresholdMedium: 5
+      thresholdHigh: 10
+      thresholdLow: 2.5
+  SimulationResult:
+    type: "object"
+    properties:
+      currents:
+        $ref: "#/definitions/Currents"
+      losses:
+        $ref: "#/definitions/Losses"
+      powers:
+        $ref: "#/definitions/Powers"
+      voltages:
+        $ref: "#/definitions/Voltages"
+    example:
+      currents:
+        node:
+          Phase1: 0
+          Phase2: 0
+          Phase3: 0
+      losses:
+        node: 1.137674105934402657425152938230894505977630615234375
+      powers:
+        node: 11.008040700350694152120922808535397052764892578125
+      voltages:
+        node:
+          Phase1:
+            max: 1.0000996955900571805386789492331445217132568359375
+            min: 1.00009950921579093829905104939825832843780517578125
+          Phase2:
+            max: 1.000099266171496470434476577793247997760772705078125
+            min: 1.0000990580105912908237542069400660693645477294921875
+          Phase3:
+            max: 1.00009993668402419331187047646380960941314697265625
+            min: 1.000099638596209761232103119255043566226959228515625
+  SimulationResult2:
+    type: "object"
+    properties:
+      nodeId:
+        type: "string"
+      voltage:
+        $ref: "#/definitions/Voltage"
+      error:
+        $ref: "#/definitions/Error"
+    example:
+      error:
+        voltageT: true
+        voltageR: true
+        voltageS: true
+      nodeId: "nodeId"
+      voltage:
+        voltageT: 1.46581298050294517310021547018550336360931396484375
+        voltageR: 0.80082819046101150206595775671303272247314453125
+        voltageS: 6.02745618307040320615897144307382404804229736328125
+  SimulationResultRaw:
+    type: "object"
+    properties:
+      node:
+        type: "array"
+        items:
+          type: "number"
+    example:
+      node:
+      - 0.80082819046101150206595775671303272247314453125
+      - 0.80082819046101150206595775671303272247314453125
+  Currents:
+    type: "object"
+    properties:
+      node:
+        $ref: "#/definitions/PhaseVal"
+  PhaseVal:
+    type: "object"
+    properties:
+      phase:
+        type: "number"
+  Losses:
+    type: "object"
+    properties:
+      node:
+        type: "number"
+  Powers:
+    type: "object"
+    properties:
+      node:
+        type: "number"
+  Voltages:
+    type: "object"
+    properties:
+      node:
+        $ref: "#/definitions/PhaseValue"
+  PhaseValue:
+    type: "object"
+    properties:
+      phase:
+        $ref: "#/definitions/PhaseValMaxMin"
+  PhaseValMaxMin:
+    type: "object"
+    properties:
+      max/min:
+        type: "number"
+  Voltage:
+    type: "object"
+    properties:
+      voltageR:
+        type: "number"
+      voltageS:
+        type: "number"
+      voltageT:
+        type: "number"
+    example:
+      voltageT: 1.46581298050294517310021547018550336360931396484375
+      voltageR: 0.80082819046101150206595775671303272247314453125
+      voltageS: 6.02745618307040320615897144307382404804229736328125
+  Error:
+    type: "object"
+    properties:
+      voltageR:
+        type: "boolean"
+      voltageS:
+        type: "boolean"
+      voltageT:
+        type: "boolean"
+    example:
+      voltageT: true
+      voltageR: true
+      voltageS: true
+  Transformer_wdgs:
+    properties:
+      struct:
+        type: "array"
+        items:
+          $ref: "#/definitions/Winding"
+  Transformer_regcontrol:
+    properties:
+      struct:
+        type: "array"
+        items:
+          $ref: "#/definitions/RegControl"
+externalDocs:
+  description: "Find out more about Storage4Grid"
+  url: "http://www.storage4grid.eu/pages/index.html"
